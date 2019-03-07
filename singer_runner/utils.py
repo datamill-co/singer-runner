@@ -4,6 +4,7 @@ from queue import PriorityQueue
 from threading import Thread
 
 EOF = b''
+EMPTYLINE = b'\n'
 TAP = 'tap'
 TARGET = 'target'
 

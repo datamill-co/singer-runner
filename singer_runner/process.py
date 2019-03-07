@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 from subprocess import Popen, PIPE
 
-from singer_runner.utils import EOF, TAP, TARGET, run_thread, terminate_queue
+from singer_runner.utils import EOF, EMPTYLINE, TAP, TARGET, run_thread, terminate_queue
 
 ON_POSIX = 'posix' in sys.builtin_module_names
 
@@ -25,11 +25,11 @@ def log_helper(stream, logger, metrics_storage):
 def singer_input_helper(stdin, pipe):
     while True:
         raw_singer_message = pipe.get()
-        if raw_singer_message == EOF:
+        if raw_singer_message in [EOF, EMPTYLINE]:
             stdin.close()
             break
         else:
-            stdin.write(raw_singer_message + b'\n')
+            stdin.write(raw_singer_message)
 
 def singer_output_helper(stdout, pipe, state_storage):
     for raw_singer_message in iter(stdout.readline, b''):
@@ -56,6 +56,8 @@ class SingerProcess:
         self.metrics_storage = metrics_storage
         self.state_storage = state_storage
         self.threads = []
+
+        process_logger.info(command)
 
         self.__process_handle = Popen(
             command,

@@ -7,6 +7,8 @@ from singer_runner.state import FileStateStorage
 from singer_runner.utils import (
     run_thread,
     EOF,
+    TAP,
+    TARGET,
     create_queue
 )
 
@@ -17,12 +19,12 @@ def create_temp_json_file(obj):
     return file
 
 def handle_file_option(command, temp_files, option, obj, file_path):
-    if obj and not file_path:
-        temp_file = create_temp_json_file(tap_config)
+    if obj is not None and file_path is None:
+        temp_file = create_temp_json_file(obj)
         file_path = temp_file.name
         temp_files.append(temp_file)
 
-    if file_path:
+    if file_path is not None:
         command += [
             option,
             file_path
@@ -53,7 +55,8 @@ def run_tap(logger,
     if state_storage and \
         not tap_state and \
         not tap_state_path:
-        tap_state = state_storage.get()
+        state_storage.load()
+        tap_state = state_storage.state
 
     handle_file_option(command,
                        temp_files,
@@ -76,6 +79,7 @@ def run_tap(logger,
     try:
         process = SingerProcess(logger,
                                 command,
+                                singer_process_type=TAP,
                                 state_storage=state_storage,
                                 metrics_storage=metrics_storage,
                                 pipe=pipe)
@@ -108,6 +112,7 @@ def run_target(logger,
     try:
         process = SingerProcess(logger,
                                 command,
+                                singer_process_type=TARGET,
                                 metrics_storage=metrics_storage,
                                 pipe=pipe)
         process.wait()
