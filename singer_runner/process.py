@@ -86,9 +86,8 @@ class SingerProcess:
         self.threads.append(self.singer_stream_thread)
 
     @property
-    def has_terminated(self):
-        return_code = self.__process_handle.poll()
-        return return_code is not None
+    def returncode(self):
+        return self.__process_handle.returncode
 
     def kill(self):
         self.__process_handle.kill()

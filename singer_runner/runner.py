@@ -30,6 +30,21 @@ def handle_file_option(command, temp_files, option, obj, file_path):
             file_path
         ]
 
+def execute_process(temp_files, *args, **kwargs):
+    process = None
+    try:
+        process = SingerProcess(*args, **kwargs)
+        process.wait()
+
+        return True if process.returncode == 0 else False
+    except:
+        if process:
+            process.kill()
+        raise
+    finally:
+        for temp_file in temp_files:
+            temp_file.close()
+
 def run_tap(logger,
             tap_command,
             tap_config=None,
@@ -76,21 +91,13 @@ def run_tap(logger,
                        tap_catalog,
                        tap_catalog_path)
 
-    try:
-        process = SingerProcess(logger,
-                                command,
-                                singer_process_type=TAP,
-                                state_storage=state_storage,
-                                metrics_storage=metrics_storage,
-                                pipe=pipe)
-        process.wait()
-    except:
-        if process:
-            process.kill()
-        raise
-    finally:
-        for temp_file in temp_files:
-            temp_file.close()
+    return execute_process(temp_files,
+                           logger,
+                           command,
+                           singer_process_type=TAP,
+                           state_storage=state_storage,
+                           metrics_storage=metrics_storage,
+                           pipe=pipe)
 
 def run_target(logger,
                target_command,
@@ -109,17 +116,9 @@ def run_target(logger,
                        target_config,
                        target_config_path)
 
-    try:
-        process = SingerProcess(logger,
-                                command,
-                                singer_process_type=TARGET,
-                                metrics_storage=metrics_storage,
-                                pipe=pipe)
-        process.wait()
-    except:
-        if process:
-            process.kill()
-        raise
-    finally:
-        for temp_file in temp_files:
-            temp_file.close()
+    return execute_process(temp_files,
+                           logger,
+                           command,
+                           singer_process_type=TARGET,
+                           metrics_storage=metrics_storage,
+                           pipe=pipe)
