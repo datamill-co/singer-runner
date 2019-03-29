@@ -3,10 +3,9 @@ from smart_open import smart_open
 from singer_runner.metrics.base import BaseMetricsStorage
 
 class FileMetricsStorage(BaseMetricsStorage):
-    def __init__(self, filepath, mode, *args, **kwargs):
+    def __init__(self, filepath, *args, **kwargs):
         self.filepath = filepath
-        self.mode = mode
-        self.file = smart_open(filepath, mode, **kwargs)
+        self.file = smart_open(filepath, 'w', **kwargs)
 
         super(FilePipe, self).__init__(*args, **kwargs)
 

@@ -35,7 +35,7 @@ def get_config(config_path):
         if ext == 'json':
             return json.load(file)
         elif ext == 'yaml':
-            return yaml_load(stream, Loader=Loader)
+            return yaml_load(file, Loader=Loader)
         else:
             raise Exception('`{}` not a support config file type'.format(ext))
 
@@ -80,22 +80,36 @@ def cli_run_tap(runner_config_path,
 
     runner_config = get_config(runner_config_path)
 
+    tap_command = tap_command or runner_config.get('tap_command')
+
     state_storage = None
     state_storage_config = runner_config.get('tap_state')
     if state_storage_config:
         state_storage_class = CONFIG_STATE_STORAGE_CLASSES[state_storage_config['type']]
-        state_storage = state_storage_class(**state_storage_config['options'])
+        options = state_storage_config['options']
+        if isinstance(options, dict):
+            state_storage = state_storage_class(**options)
+        else:
+            state_storage = state_storage_class(*options)
 
     metrics_storage = None
-    metrics_storage_config = runner_config.get('tap_metrics')
+    metrics_storage_config = runner_config.get('metrics')
     if metrics_storage_config:
         metrics_storage_class = CONFIG_METRICS_STORAGE_CLASSES[metrics_storage_config['type']]
-        metrics_storage = metrics_storage_class(**metrics_storage_config['options'])
+        options = metrics_storage_config['options']
+        if isinstance(options, dict):
+            metrics_storage = metrics_storage_class(**options)
+        else:
+            metrics_storage = metrics_storage_class(*options)
 
     pipe_config = runner_config.get('pipe')
     if pipe_config:
         pipe_class = CONFIG_PIPE_CLASSES[pipe_config['type']]
-        pipe = pipe_class(**pipe_config['options'])
+        options = pipe_config['options']
+        if isinstance(options, dict):
+            pipe = pipe_class(**options)
+        else:
+            pipe = pipe_class(*options)
     else:
         pipe = StdInOutPipe()
 

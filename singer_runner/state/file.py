@@ -7,7 +7,7 @@ from singer_runner.state.base import BaseStateStorage
 class FileStateStorage(BaseStateStorage):
     def __init__(self, filepath, *args, **kwargs):
         self.filepath = filepath
-        super(FileStatePersister, self).__init__(*args, **kwargs)
+        super(FileStateStorage, self).__init__(*args, **kwargs)
 
     def dump(self, state):
         with smart_open(self.filepath, 'w') as file:
