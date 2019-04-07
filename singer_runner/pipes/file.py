@@ -7,6 +7,7 @@ class FilePipe(BasePipe):
         self.filepath = filepath
         self.mode = mode
         self.file = smart_open(filepath, mode, **kwargs)
+        self.linefeed = b'\n' if mode == 'wb' else '\n'
 
         super(FilePipe, self).__init__(*args, **kwargs)
 
@@ -15,7 +16,7 @@ class FilePipe(BasePipe):
         self.file.close()
 
     def put(self, raw_singer_message):
-        self.file.write(raw_singer_message + b'\n')
+        self.file.write(raw_singer_message + self.linefeed)
 
     def get(self):
         return self.file.readline()
