@@ -9,7 +9,7 @@ try:
 except ImportError:
     from yaml import Loader
 
-from singer_runner.runner import run_tap
+from singer_runner.runner import run_tap, run_target
 from singer_runner.state import FileStateStorage
 from singer_runner.metrics import FileMetricsStorage
 from singer_runner.pipes import FilePipe, MemoryPipe, StdInOutPipe
@@ -23,7 +23,8 @@ CONFIG_METRICS_STORAGE_CLASSES = {
 }
 
 CONFIG_PIPE_CLASSES = {
-    'file': FilePipe
+    'file': FilePipe,
+    'stdinout': StdInOutPipe
 }
 
 def get_config(config_path):
@@ -121,3 +122,26 @@ def cli_run_tap(runner_config_path,
             state_storage=state_storage,
             metrics_storage=metrics_storage,
             pipe=pipe)
+
+@main.command('run-target')
+@click.option('--runner-config-path', help='Path to singer-runner config')
+@click.option('--target-command', help='Target command. Overrides singer-runner config')
+@click.option('--target-config-path', help='Static target config file. Overrides singer-runner config')
+def cli_run_target(runner_config_path,
+                   target_command,
+                   target_config_path):
+    if not runner_config_path and not target_command:
+        raise Exception('`--runner-config-path` or `--target-command` required.')
+
+    logger = init_logger()
+
+    runner_config = get_config(runner_config_path)
+
+    target_command = target_command or runner_config.get('target_command')
+
+    pipe = StdInOutPipe()
+
+    run_target(logger,
+               target_command,
+               target_config_path=target_config_path or runner_config.get('target_config_path'),
+               pipe=pipe)
