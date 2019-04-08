@@ -8,4 +8,4 @@ class StdInOutPipe(BasePipe):
         sys.stdout.write(raw_singer_message.decode('utf-8'))
 
     def get(self):
-        return sys.stdin.buffer.read()
+        return sys.stdin.buffer.readline()
