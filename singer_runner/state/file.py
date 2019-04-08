@@ -15,9 +15,9 @@ class FileStateStorage(BaseStateStorage):
         self.state = state
 
     def load(self):
-        with smart_open(self.filepath, 'r') as file:
-            try:
+        try:
+            with smart_open(self.filepath, 'r') as file:
                 self.state = json.load(file)
-            except ValueError:
-                self.state = None
+        except ValueError:
+            self.state = None
         return self.state
