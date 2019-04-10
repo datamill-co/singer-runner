@@ -9,7 +9,9 @@ setup(
     packages=find_packages(),
     install_requires=[
         'pyyaml>=4.2b1',
-        'smart-open==1.8.0'
+        'smart-open==1.8.0',
+        'click==7.0',
+        'dataclasses'
     ],
     tests_require=[
     ],
