@@ -9,7 +9,7 @@ try:
 except ImportError:
     from yaml import Loader
 
-from singer_runner.runner import run_tap
+from singer_runner.runner import run_tap, run_target
 from singer_runner.state import FileStateStorage
 from singer_runner.metrics import FileMetricsStorage
 from singer_runner.pipes import FilePipe, MemoryPipe, StdInOutPipe
@@ -23,7 +23,8 @@ CONFIG_METRICS_STORAGE_CLASSES = {
 }
 
 CONFIG_PIPE_CLASSES = {
-    'file': FilePipe
+    'file': FilePipe,
+    'stdinout': StdInOutPipe
 }
 
 def get_config(config_path):
@@ -62,6 +63,36 @@ def init_logger():
 def main():
     pass
 
+def init_module(runner_config, class_map, config_key):
+    module_config = runner_config.get(config_key)
+    if not module_config:
+        return None
+    module_class = class_map[module_config['type']]
+    options = module_config['options']
+    if isinstance(options, dict):
+        return module_class(**options)
+    else:
+        return module_class(*options)
+
+def init_modules(runner_config, is_tap):
+    runner_modules = {}
+
+    if is_tap:
+        runner_modules['state_storage'] = init_module(runner_config,
+                                                      CONFIG_STATE_STORAGE_CLASSES,
+                                                      'tap_state')
+
+    runner_modules['metrics_storage'] = init_module(runner_config,
+                                                    CONFIG_METRICS_STORAGE_CLASSES,
+                                                    'metrics')
+
+    pipe = init_module(runner_config, CONFIG_PIPE_CLASSES, 'pipe')
+    if not pipe:
+        pipe = StdInOutPipe()
+    runner_modules['pipe'] = pipe
+
+    return runner_modules
+
 @main.command('run-tap')
 @click.option('--runner-config-path', help='Path to singer-runner config')
 @click.option('--tap-command', help='Tap command. Overrides singer-runner config')
@@ -82,42 +113,34 @@ def cli_run_tap(runner_config_path,
 
     tap_command = tap_command or runner_config.get('tap_command')
 
-    state_storage = None
-    state_storage_config = runner_config.get('tap_state')
-    if state_storage_config:
-        state_storage_class = CONFIG_STATE_STORAGE_CLASSES[state_storage_config['type']]
-        options = state_storage_config['options']
-        if isinstance(options, dict):
-            state_storage = state_storage_class(**options)
-        else:
-            state_storage = state_storage_class(*options)
-
-    metrics_storage = None
-    metrics_storage_config = runner_config.get('metrics')
-    if metrics_storage_config:
-        metrics_storage_class = CONFIG_METRICS_STORAGE_CLASSES[metrics_storage_config['type']]
-        options = metrics_storage_config['options']
-        if isinstance(options, dict):
-            metrics_storage = metrics_storage_class(**options)
-        else:
-            metrics_storage = metrics_storage_class(*options)
-
-    pipe_config = runner_config.get('pipe')
-    if pipe_config:
-        pipe_class = CONFIG_PIPE_CLASSES[pipe_config['type']]
-        options = pipe_config['options']
-        if isinstance(options, dict):
-            pipe = pipe_class(**options)
-        else:
-            pipe = pipe_class(*options)
-    else:
-        pipe = StdInOutPipe()
+    runner_modules = init_modules(runner_config, True)
 
     run_tap(logger,
             tap_command,
             tap_config_path=tap_config_path or runner_config.get('tap_config_path'),
             tap_state_path=tap_state_path or runner_config.get('tap_state_path'),
             tap_catalog_path=tap_catalog_path or runner_config.get('tap_catalog_path'),
-            state_storage=state_storage,
-            metrics_storage=metrics_storage,
-            pipe=pipe)
+            **runner_modules)
+
+@main.command('run-target')
+@click.option('--runner-config-path', help='Path to singer-runner config')
+@click.option('--target-command', help='Target command. Overrides singer-runner config')
+@click.option('--target-config-path', help='Static target config file. Overrides singer-runner config')
+def cli_run_target(runner_config_path,
+                   target_command,
+                   target_config_path):
+    if not runner_config_path and not target_command:
+        raise Exception('`--runner-config-path` or `--target-command` required.')
+
+    logger = init_logger()
+
+    runner_config = get_config(runner_config_path)
+
+    target_command = target_command or runner_config.get('target_command')
+
+    runner_modules = init_modules(runner_config, False)
+
+    run_target(logger,
+               target_command,
+               target_config_path=target_config_path or runner_config.get('target_config_path'),
+               **runner_modules)

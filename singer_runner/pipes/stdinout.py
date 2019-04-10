@@ -7,4 +7,5 @@ class StdInOutPipe(BasePipe):
         ## TODO: thread safety?
         sys.stdout.write(raw_singer_message.decode('utf-8'))
 
-    ## TODO: implement get
+    def get(self):
+        return sys.stdin.readline().encode('utf-8')
