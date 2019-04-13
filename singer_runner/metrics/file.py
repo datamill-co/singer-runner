@@ -7,11 +7,11 @@ class FileMetricsStorage(BaseMetricsStorage):
         self.filepath = filepath
         self.file = smart_open(filepath, 'w', **kwargs)
 
-        super(FilePipe, self).__init__(*args, **kwargs)
+        super(FileMetricsStorage, self).__init__(*args, **kwargs)
 
     def close(self):
-        super(FilePipe, self).close()
+        super(FileMetricsStorage, self).close()
         self.file.close()
 
     def put(self, raw_singer_metric):
-        self.file.write(raw_singer_metric + b'\n')
+        self.file.write(raw_singer_metric + '\n')
