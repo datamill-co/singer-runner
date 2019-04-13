@@ -2,15 +2,11 @@ import json
 from tempfile import NamedTemporaryFile
 
 from singer_runner.process import SingerProcess
-from singer_runner.pipes import FilePipe
-from singer_runner.state import FileStateStorage
 from singer_runner.utils import (
-    run_thread,
-    EOF,
     TAP,
-    TARGET,
-    create_queue
+    TARGET
 )
+
 
 def create_temp_json_file(obj):
     file = NamedTemporaryFile(mode='w')
@@ -57,7 +53,6 @@ def run_tap(logger,
             metrics_storage=None,
             pipe=None):
     temp_files = []
-    process = None
 
     command = [tap_command]
 
@@ -106,7 +101,6 @@ def run_target(logger,
                metrics_storage=None,
                pipe=None):
     temp_files = []
-    process = None
 
     command = [target_command]
 

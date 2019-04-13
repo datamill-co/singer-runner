@@ -12,7 +12,7 @@ except ImportError:
 from singer_runner.runner import run_tap
 from singer_runner.state import FileStateStorage
 from singer_runner.metrics import FileMetricsStorage
-from singer_runner.pipes import FilePipe, MemoryPipe, StdInOutPipe
+from singer_runner.pipes import FilePipe, StdInOutPipe
 
 CONFIG_STATE_STORAGE_CLASSES = {
     'file': FileStateStorage

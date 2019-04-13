@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 from subprocess import Popen, PIPE
 
-from singer_runner.utils import EOF, EMPTYLINE, TAP, TARGET, run_thread, terminate_queue
+from singer_runner.utils import EOF, EMPTYLINE, TAP, TARGET, run_thread
 
 ON_POSIX = 'posix' in sys.builtin_module_names
 
@@ -48,8 +48,7 @@ class SingerProcess:
                  singer_process_type=TAP,
                  pipe=None,
                  metrics_storage=None,
-                 state_storage=None,
-                 output_stream_queue_size=0):
+                 state_storage=None):
         self.started_at = datetime.utcnow()
         self.singer_process_type = singer_process_type
         self.pipe = pipe
