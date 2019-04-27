@@ -15,11 +15,7 @@ Requires python 3, tested with python 3.7
 ### Install
 
 ```sh
-git clone git@github.com:datamill-co/singer-runner.git
-cd singer-runner
-virtualenv -p python3 env
-source env/bin/activate
-pip install -e .
+pip install singer-runner
 ```
 
 ### Run
