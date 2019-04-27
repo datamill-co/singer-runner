@@ -93,6 +93,11 @@ def init_modules(runner_config, is_tap):
 
     return runner_modules
 
+def close_modules(runner_modules):
+    for key, runner_module in runner_modules.items():
+        if hasattr(runner_module, 'close'):
+            runner_module.close()
+
 @main.command('run-tap')
 @click.option('--runner-config-path', help='Path to singer-runner config')
 @click.option('--tap-command', help='Tap command. Overrides singer-runner config')
@@ -122,6 +127,8 @@ def cli_run_tap(runner_config_path,
             tap_catalog_path=tap_catalog_path or runner_config.get('tap_catalog_path'),
             **runner_modules)
 
+    close_modules(runner_modules)
+
 @main.command('run-target')
 @click.option('--runner-config-path', help='Path to singer-runner config')
 @click.option('--target-command', help='Target command. Overrides singer-runner config')
@@ -144,3 +151,5 @@ def cli_run_target(runner_config_path,
                target_command,
                target_config_path=target_config_path or runner_config.get('target_config_path'),
                **runner_modules)
+
+    close_modules(runner_modules)
