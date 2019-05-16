@@ -7,8 +7,10 @@ from singer_runner.utils import EOF, EMPTYLINE
 class GCSPipe(BasePipe):
     OBJECT_REGEX = r'gcs://([^/]+)/(.+)'
     RANGE_REGEX = r'bytes=([0-9]+)\-([0-9]+)'
+    DEFAULT_CHUNK_SIZE = 256 * 1024 # 256 KB
 
-    def __init__(self, filepath, mode, *args, **kwargs):
+    def __init__(self, filepath, mode, *args, chunk_size=None, **kwargs):
+        # load internally so these can be extras_require
         from google.cloud import storage
         import requests
 
@@ -16,6 +18,13 @@ class GCSPipe(BasePipe):
 
         self._filepath = filepath
         self._mode = mode
+
+        if chunk_size:
+            if chunk_size % self.DEFAULT_CHUNK_SIZE != 0:
+                raise Exception('`chunk_size` must a multiple of 256 KB (256 x 1024 bytes)')
+            self._chunk_size = chunk_size
+        else:
+            self._chunk_size = self.DEFAULT_CHUNK_SIZE
 
         match = re.match(self.OBJECT_REGEX, filepath)
 
@@ -25,8 +34,6 @@ class GCSPipe(BasePipe):
         bucket_name, blob_name = match.groups()
 
         self._blob = self._storage_client.bucket(bucket_name).blob(blob_name)
-
-        self._chunk_size = 256 * 1024 # 256 KB
         self._bytes_transmitted = 0
         self._buffer = b''
 
@@ -117,6 +124,7 @@ class GCSPipe(BasePipe):
             self._buffer = b''
 
         self._lines += lines
+        self._bytes_transmitted += len(chunk)
 
     def get(self):
         if not self._lines:
