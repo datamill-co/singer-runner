@@ -24,7 +24,13 @@ setup(
         'click==7.0'
     ],
     tests_require=[
+        'pytest==4.5.0'
     ],
+    extras_require={
+        'gcs': [
+            'google-cloud-storage==1.15.1'
+        ]
+    },
     entry_points={
         'console_scripts': [
             'singer-runner=singer_runner:main'

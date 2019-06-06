@@ -12,7 +12,7 @@ except ImportError:
 from singer_runner.runner import run_tap, run_target
 from singer_runner.state import FileStateStorage
 from singer_runner.metrics import FileMetricsStorage
-from singer_runner.pipes import FilePipe, StdInOutPipe
+from singer_runner.pipes import FilePipe, GCSPipe, StdInOutPipe
 
 CONFIG_STATE_STORAGE_CLASSES = {
     'file': FileStateStorage
@@ -24,7 +24,8 @@ CONFIG_METRICS_STORAGE_CLASSES = {
 
 CONFIG_PIPE_CLASSES = {
     'file': FilePipe,
-    'stdinout': StdInOutPipe
+    'stdinout': StdInOutPipe,
+    'gcs': GCSPipe
 }
 
 def get_config(config_path):
