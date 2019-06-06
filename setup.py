@@ -16,7 +16,7 @@ setup(
     long_description_content_type='text/markdown',
     classifiers=['Programming Language :: Python :: 3 :: Only'],
     author='datamill',
-    version='0.0.1',
+    version='0.0.2',
     packages=find_packages(),
     install_requires=[
         'pyyaml>=4.2b1',
