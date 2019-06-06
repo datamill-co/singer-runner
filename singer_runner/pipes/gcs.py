@@ -93,9 +93,6 @@ class GCSPipe(BasePipe):
                             data['size'],
                             expected_bytes))
 
-            ## TODO: handle 5xx? https://cloud.google.com/storage/docs/json_api/v1/how-tos/resumable-upload#resume-upload
-            ## TODO: md5 check? both each chunk and final?
-
             self._bytes_transmitted += self._chunk_size
             self._buffer = self._buffer[self._chunk_size:]
 
