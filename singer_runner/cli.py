@@ -121,14 +121,17 @@ def cli_run_tap(runner_config_path,
 
     runner_modules = init_modules(runner_config, True)
 
-    run_tap(logger,
-            tap_command,
-            tap_config_path=tap_config_path or runner_config.get('tap_config_path'),
-            tap_state_path=tap_state_path or runner_config.get('tap_state_path'),
-            tap_catalog_path=tap_catalog_path or runner_config.get('tap_catalog_path'),
-            **runner_modules)
-
-    close_modules(runner_modules)
+    try:
+        is_success = run_tap(logger,
+                             tap_command,
+                             tap_config_path=tap_config_path or runner_config.get('tap_config_path'),
+                             tap_state_path=tap_state_path or runner_config.get('tap_state_path'),
+                             tap_catalog_path=tap_catalog_path or runner_config.get('tap_catalog_path'),
+                             **runner_modules)
+        if not is_success:
+            raise SystemExit("Encountered error running tap")
+    finally:
+        close_modules(runner_modules)
 
 @main.command('run-target')
 @click.option('--runner-config-path', help='Path to singer-runner config')
@@ -148,9 +151,12 @@ def cli_run_target(runner_config_path,
 
     runner_modules = init_modules(runner_config, False)
 
-    run_target(logger,
-               target_command,
-               target_config_path=target_config_path or runner_config.get('target_config_path'),
-               **runner_modules)
-
-    close_modules(runner_modules)
+    try:
+        is_success = run_target(logger,
+                                target_command,
+                                target_config_path=target_config_path or runner_config.get('target_config_path'),
+                                **runner_modules)
+        if not is_success:
+            raise SystemExit("Encountered error running target")
+    finally:
+        close_modules(runner_modules)
