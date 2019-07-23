@@ -29,7 +29,7 @@ def singer_input_helper(stdin, pipe):
             stdin.close()
             break
         else:
-            stdin.write(raw_singer_message)
+            stdin.write(raw_singer_message + b'\n')
 
 def singer_output_helper(stdout, pipe, state_storage):
     for raw_singer_message in iter(stdout.readline, b''):
