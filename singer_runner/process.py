@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import logging
 from datetime import datetime
 from subprocess import Popen, PIPE
 
@@ -10,6 +11,12 @@ ON_POSIX = 'posix' in sys.builtin_module_names
 
 SINGER_METRICS_PREFIX = 'INFO METRIC: '
 SINGER_METRICS_PREFIX_LN = len(SINGER_METRICS_PREFIX)
+LOGGING_LEVELS = {
+    'ERROR' : logging.ERROR,
+    'WARNING' : logging.WARN,
+    'INFO' : logging.INFO,
+    'DEBUG' : logging.DEBUG
+}
 
 def log_helper(stream, logger, metrics_storage):
     for line in iter(stream.readline, b''):
@@ -19,8 +26,12 @@ def log_helper(stream, logger, metrics_storage):
         if metrics_storage and \
            log_line[:SINGER_METRICS_PREFIX_LN] == SINGER_METRICS_PREFIX:
             metrics_storage.put(log_line[SINGER_METRICS_PREFIX_LN:])
-
-        logger.info(log_line)
+        log_split = log_line.split(' ', 1)
+        if len(log_split) > 1:
+            log_level, log_msg = log_split
+            logger.log(LOGGING_LEVELS[log_level], log_msg)
+        else:
+            logger.info(log_line)
 
 def singer_input_helper(stdin, pipe):
     while True:
