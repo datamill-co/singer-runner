@@ -24,7 +24,7 @@ setup(
         'click==7.0'
     ],
     tests_require=[
-        'pytest==4.5.0'
+        'pytest==9.0.3'
     ],
     extras_require={
         'gcs': [
